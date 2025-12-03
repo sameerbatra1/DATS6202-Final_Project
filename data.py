@@ -157,3 +157,28 @@ for i, v in enumerate(missing_pct):
     plt.text(v + 0.5, i, f'{v:.1f}%', va='center')
 
 plt.tight_layout()
+
+#%%[markdown]
+# HANDLE MISSING VALUES
+#%%
+df['age'].value_counts()
+# %%
+df['age'].describe()
+# %%
+df.drop(df[df['age'] == df['age'].min()].index, inplace=True)
+# %%
+df['MonthlyIncome'] = df.groupby('age')['MonthlyIncome'].transform(lambda x: x.fillna(x.median()))
+# %%
+df.isna().sum()
+# %%
+df[df['MonthlyIncome'].isna()]
+# %%
+df = df[df['MonthlyIncome'].notna()]
+# %%
+df.isna().sum()
+# %%
+df['NumberOfDependents'].value_counts(dropna=False)
+# %%
+df['NumberOfDependents'].fillna(df['NumberOfDependents'].median(), inplace=True)
+# %%
+df.isna().sum()
