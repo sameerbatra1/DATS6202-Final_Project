@@ -182,3 +182,74 @@ df['NumberOfDependents'].value_counts(dropna=False)
 df['NumberOfDependents'].fillna(df['NumberOfDependents'].median(), inplace=True)
 # %%
 df.isna().sum()
+
+# %%
+#%%[markdown]
+## handling outliers
+# %%
+df['RevolvingUtilizationOfUnsecuredLines'].describe()
+# %%
+# The column RevolvingUtilizationOfUnsecuredLines shows that how over limit the user is from their original credit limit. 
+df = df[df['RevolvingUtilizationOfUnsecuredLines'] <= 1.5]  # Allow up to 150%
+# %%
+df['RevolvingUtilizationOfUnsecuredLines'].describe()
+# %%
+def remove_outliers_iqr(df, columns):
+    df_clean = df.copy()
+    for column in columns:
+        Q1 = df_clean[column].quantile(0.25)
+        Q3 = df_clean[column].quantile(0.75)
+        IQR = Q3 - Q1
+        
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+        
+        df_clean = df_clean[(df_clean[column] >= lower_bound) & (df_clean[column] <= upper_bound)]
+    
+    return df_clean
+
+# Usage
+df = remove_outliers_iqr(df, ['age'])
+
+#%%
+df = remove_outliers_iqr(df, ['MonthlyIncome'])
+
+#%%
+df = remove_outliers_iqr(df, ['DebtRatio'])
+
+#%%
+df = remove_outliers_iqr(df, ['NumberOfDependents'])
+# %%
+def plot_boxplot(df, column_name, figsize=(10, 6)):
+    plt.figure(figsize=figsize)
+    plt.boxplot(df[column_name].dropna(), vert=True, patch_artist=True,
+                boxprops=dict(facecolor='lightblue', color='blue'),
+                medianprops=dict(color='red', linewidth=2),
+                whiskerprops=dict(color='blue'),
+                capprops=dict(color='blue'),
+                flierprops=dict(marker='o', markerfacecolor='red', markersize=5, alpha=0.5))
+    
+    plt.ylabel('Value', fontsize=12)
+    plt.title(f'Boxplot of {column_name}', fontsize=14, fontweight='bold')
+    plt.grid(axis='y', alpha=0.3)
+    
+    plt.show()
+
+# %%
+plot_boxplot(df, 'age')
+# %%
+plot_boxplot(df, 'MonthlyIncome')
+
+#%%
+plot_boxplot(df, 'DebtRatio')
+
+#%%
+plot_boxplot(df, 'RevolvingUtilizationOfUnsecuredLines')
+# %%
+plot_boxplot(df, 'NumberOfDependents')
+# %%
+df.describe()
+# %%
+df['SeriousDlqin2yrs'].value_counts()
+# %%
+df.to_csv("GiveMeSomeCredit/GiveMeSomeCredit-cleaned.csv", index=True)
